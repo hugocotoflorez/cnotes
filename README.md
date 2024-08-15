@@ -5,6 +5,10 @@
 2. [Makefile](#Makefile)
 3. [Pointers](#Pointers)
 4. [Bit Flags](#BitFlags)
+5. [Lock Up Tables](#LockUpTables)
+6. [Restrict keyword](#Restrict)
+7. [Generics](#Generics)
+8. [Structs](#Structs)
 
 
 ## Gcc
@@ -114,6 +118,22 @@ realloc_ptr = realloc;
 Both `&realloc` and `realloc` give the function address.
 Function pointers can be a field into structs.
 
+### Mindchanging example
+
+``` c
+void free(void *ptr){
+
+    header_t *hptr;
+    ...
+    hptr = (header_t*) ptr - 1;
+```
+
+To give a little more context, when allocating a block
+into the heap, a header with some info is stored above the n bytes
+block that user ask for. As this header is just above returning pointer,
+the first byte of the struct is exacly the size of this struct before the
+returning pointer.
+
 ## BitFlags
 
 Bit flags are a memory-efficient options storege. Assume
@@ -182,4 +202,121 @@ options.
 - `a <<= b`, `a |= b` also valid.
 
 
+## LockUpTables
 
+Is 0(1) search tech, but sometimes space inefficient.
+
+```c
+static const int lookup[] = {
+    [0] = 10,
+    [1] = 20,
+    [2] = 40,
+    [3] = 50,
+    [10] = 120,
+}
+```
+
+By doing this you are assigning a constant value to each
+array index. You can use an enum to assign values to enum
+keys. As you can see accessing time is constant.
+
+
+## Restrict
+
+Restrict keyword tell the compiler that the pointer marked
+as restrict would not be modified by any other pointer, so
+value remains constant until modified using restrict pointer.
+This allow compiler to generate more optimized code.
+
+Example: `void *memcpy(restrict void dest, restrict void src, size_t n);`
+
+## Changing enum type
+
+This requires c23 standard
+
+``` c
+enum myenum: char {
+    A = 'a',
+    B = 'b',
+}
+```
+
+## Generics
+
+``` c
+#define add(a, b) _Generic(a,
+    int: add_int(a,b),
+    float: add_float(a,b),
+    default: add_unknown(a,b)
+    )
+```
+
+I think this requires c23 standard
+
+## Structs
+
+### Specify field size
+
+``` c
+struct file_header
+{
+    uint8_t transmission_system : 8;
+    uint32_t identifier : 24;
+    uint16_t line_ending : 16;
+    uint8_t eof_character : 8;
+    uint8_t eol_character : 8;
+};
+```
+
+By doing so you are giving `n` bits to the field instead of
+sizeof-type bytes.
+
+### Removing padding
+
+``` c
+struct IHDR
+{
+    uint32_t width : 32;
+    uint32_t height : 32;
+    uint8_t bit_depth : 8;
+    uint8_t color_type : 8;
+    uint8_t compression_method : 8;
+    uint8_t filter_method : 8;
+    uint8_t interlace_method : 8;
+} __attribute__((packed));
+```
+
+Removing padding is usefull when you use your struct to split
+some data into fields, despite you afford some bits it
+would do accessing to the struct fields slower. Do this only
+if needed.
+
+### Read data with structs
+
+``` c
+bool read_header(int fd, struct file_header* header)
+{
+    read(fd, header, 8);
+}
+```
+
+By passing the address of an struct to read, the data read
+would be stored into the struct, so you can access it by
+field name instead of raw bytes. (8 is the struct length in bytes).
+
+#### Playing with types
+
+``` c
+struct ieee754_float
+{
+    unsigned sign : 1;
+    unsigned exponent : 8;
+    unsigned mantissa : 23;
+} __attribute__((packed));
+
+float                f     = 3.14;
+struct ieee754_float ieeef = *(struct ieee754_float *) &f;
+```
+
+Just try to meassure what this code should do. Is important to typecast
+to pointers because otherwise errors about arithmetic stuff raise.
