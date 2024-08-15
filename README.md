@@ -52,7 +52,7 @@ git: compile
 
 This rule would execute compile and then run the git commands.
 
-## wildcard
+### wildcard
 
 This keyword allow select files in current folder
 
@@ -60,7 +60,7 @@ This keyword allow select files in current folder
 SRC = $(wildcard *.c)
 ```
 
-## Select files with different extensions
+### Select files with different extensions
 
 It is possible to select files with same name but different extensions
 
