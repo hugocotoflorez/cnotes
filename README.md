@@ -70,11 +70,44 @@ OBJ = $(SRC:.c=.o)
 
 Selects all .o with the same name as all .c in SRC
 
-### Pointers
+## Pointers
 
-## Quick start
+### What I learn about how memory works
 
-| Name | Value | Address | Code |
-| :---: | :---: | :---: | :---: |
-| a | 10 | 0x1230 | int a = 10;
-| pA | 0x1234 | 0x1234 | int* b = &a;
+As a newbie I used to think about variables as a box where
+you can store values inside of it, where each variable have
+a memory address assigned to it. It is not incorrect, but
+addresses look a magical thing that `&` returns and is
+useless.
+
+Nowadays I change my point of view. I see memory as a huge
+array, that you can access each byte of it. At variable
+creation, OS is filling `n` bytes of this array with some
+data, where `n` is the type len (in bytes). As you can see
+variables are not a box but an offset into the array, given
+the position where data is placed.
+
+### Function pointers
+
+Boilerplate
+
+``` c
+return_type (* pointer_name)(params);
+```
+
+Example
+
+``` c
+void *realloc(void *, size_t);
+void *(*realloc_ptr)(void *, size_t);
+```
+
+How to get function addresses
+
+``` c
+realloc_ptr = &realloc;
+realloc_ptr = realloc;
+```
+
+Both `&realloc` and `realloc` give the function address.
+
