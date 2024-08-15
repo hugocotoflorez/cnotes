@@ -3,6 +3,8 @@
 # Table of contents
 1. [Gcc options](#Gcc)
 2. [Makefile](#Makefile)
+3. [Pointers](#Pointers)
+4. [Bit Flags](#BitFlags)
 
 
 ## Gcc
@@ -89,20 +91,20 @@ the position where data is placed.
 
 ### Function pointers
 
-Boilerplate
+#### Boilerplate
 
 ``` c
 return_type (* pointer_name)(params);
 ```
 
-Example
+#### Example
 
 ``` c
 void *realloc(void *, size_t);
 void *(*realloc_ptr)(void *, size_t);
 ```
 
-How to get function addresses
+#### How to get function addresses
 
 ``` c
 realloc_ptr = &realloc;
@@ -110,4 +112,74 @@ realloc_ptr = realloc;
 ```
 
 Both `&realloc` and `realloc` give the function address.
+Function pointers can be a field into structs.
+
+## BitFlags
+
+Bit flags are a memory-efficient options storege. Assume
+that you want to pass to a function a lot of boolean info,
+asking for each value would be inefficient.
+
+Bit flags use each bit into a variable to store boolean values.
+
+### How to declare Bit Flags
+
+Easiest and cleanest way is to use enums
+
+``` c
+typedef enum {
+    NONE = 1 << 0,
+    OPT1 = 1 << 1,
+    OPT2 = 1 << 2,
+    OPT3 = 1 << 3,
+    OPT4 = 1 << 4,
+} Options;
+```
+
+To declare an option param you can do something like
+`foo(int a, int b, Options options);`.
+
+### Set options
+
+To set options you have to unary-or option values:
+`foo(1, 2, OPT1 | OPT2 | OPT3);` this way you are
+passing this 3 options to options param.
+
+### Check for options
+
+#### Using if
+
+`if(options & OPT1){...}` Check if options have OPT1.
+
+#### Using swith
+
+``` c
+switch (options){
+    case (options == NONE):
+    ...
+    case (options & OPT1):
+    case (options & OPT2):
+    case (options & OPT3):
+}
+```
+
+Note that if check for NONE is needed you have to use `==`
+instead of `&`. Think about what happened when doing
+`something & 0` (as NONE is 0).
+
+### Unset values
+
+`options &= ~(OPT1);` would unset OPT1 if set from variable
+options.
+
+### Quick note for wtfisthis-people
+
+- `1<<n`: move 1 `n` bits to the left.
+- `~ a`: bit not.
+- `a | b`: bit or.
+- `a & b`: bit and.
+- `a &= b`: a = a & b.
+- `a <<= b`, `a |= b` also valid.
+
+
 
