@@ -1,5 +1,14 @@
 # Notes about C programming language
 
+# About
+
+This repo is created to share little tricks about C lang
+that help me improving as a programmer. Feel free to open
+an issue if something is wrong or can be better. Also is a good
+place to ask for explanation about other repos (my other repos)
+code that looks strange for you. Thanks for be here and I hope it
+would help you.
+
 # Table of contents
 1. [Gcc options](#Gcc)
 2. [Makefile](#Makefile)
@@ -9,6 +18,9 @@
 6. [Restrict keyword](#Restrict)
 7. [Generics](#Generics)
 8. [Structs](#Structs)
+9. [Fix inits](#Constructor)
+10. [Static keyword](#Static)
+11. [constexpr](#constexpr)
 
 
 ## Gcc
@@ -320,3 +332,49 @@ struct ieee754_float ieeef = *(struct ieee754_float *) &f;
 
 Just try to meassure what this code should do. Is important to typecast
 to pointers because otherwise errors about arithmetic stuff raise.
+
+## Constructor
+
+All proyects require to initialize data at program start.
+You can just create a init() function and call it from main.
+But sometimes there are too much inits functions in too much files and
+you dont want to have to ask the user to manually initialize every functionality.
+
+By adding another attribute you can tell the compiler to call the function
+before calling main().
+
+``` c
+static __attribute__((constructor)) void __init__()
+{
+}
+```
+
+### Static
+
+You would have asked what tf is static as it appears more than once before
+this line.
+
+Static said the compiler that the function can only be accessed from this
+file, allowing using the same name in other functions. This way
+you can declare all init functions as `static __init__()` in all the files
+without worry about function already defined stuff.
+
+### constexpr
+
+This keyword from c23 standard wants to fix constant defines from `#define`'s.
+As you will notice `define` allow you substitue any name with any value,
+without no security check as overflow or invalid values.
+
+constexpr allow define a typed variable that can be evaluated at compile time.
+
+#### Syntaxis
+
+``` c
+constexpr size_t len = 10;
+```
+
+This prevents define len with a value that size_t cant handle, like a negative
+value or a huge num.
+
+
+### ...
