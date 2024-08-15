@@ -68,7 +68,7 @@ git: compile
     git push
 ```
 
-This rule would execute compile and then run the git commands.
+This rule would execute `compile` and then run the git commands.
 
 ### wildcard
 
@@ -87,6 +87,11 @@ OBJ = $(SRC:.c=.o)
 ```
 
 Selects all .o with the same name as all .c in SRC
+
+### Silent output
+
+By adding an `@` before any command, it is not printed
+when executed.
 
 ## Pointers
 
