@@ -18,15 +18,15 @@
 
 ### Output
 
--`-g`: Turn on debug info
--`-c`: Compile or assemble but dont link. (Generates .o)
--`-S`: Stop after compilation. (Generates .s, assembly)
--`-o`: Output name
+- `-g`: Turn on debug info
+- `-c`: Compile or assemble but dont link. (Generates .o)
+- `-S`: Stop after compilation. (Generates .s, assembly)
+- `-o`: Output name
 
 ### C dialect
 
--`-std=standard`: Determine the language standard. Possible values are c89, gnu89, ..., c23.
+- `-std=standard`: Determine the language standard. Possible values are c89, gnu89, ..., c23.
 
 ### Warnings
 
--`-Wall`: Warn about almost all warnings.
+- `-Wall`: Warn about almost all warnings.
