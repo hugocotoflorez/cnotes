@@ -74,7 +74,7 @@ Selects all .o with the same name as all .c in SRC
 
 ## Quick start
 
-| Name | Value | Address |
-| :---: | :---: | :---: |
-| a | 10 | 0x1230 | <- int a = 10;
-| pA | 0x1234 | 0x1234 | <- int* b = &a;
+| Name | Value | Address | Code |
+| :---: | :---: | :---: | :---: |
+| a | 10 | 0x1230 | int a = 10;
+| pA | 0x1234 | 0x1234 | int* b = &a;
