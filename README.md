@@ -21,6 +21,7 @@ would help you.
 9. [Fix inits](#Constructor)
 10. [Static keyword](#Static)
 11. [constexpr](#constexpr)
+12. [gnu c](#gnu)
 
 
 ## Gcc
@@ -382,4 +383,251 @@ This prevents define len with a value that size_t cant handle, like a negative
 value or a huge num.
 
 
-### ...
+#gnu
+
+## Intro
+Notas sobre gnu C por Hugo Coto.
+
+## Índice
+1. [Expresiones condicionales](#Expresiones\ condicionales)
+2. [Potenciación de números hexadecimales](#Potenciación\ de\ números\ hexadecimales)
+3. [Puntero a entero](#Puntero\ a\ entero)
+4. [Offset en una estructura](#Offset\ en\ una\ estructura)
+5. [Estructuras y uniones sin nombre](#Estructuras\ y\ uniones\ sin\ nombre)
+6. [Enums](#Enums)
+7. [Switch-case](#Switch-case)
+8. [Local labels](#Local\ labels)
+9. [Acceder al valor de un label](#Acceder\ al\ valor\ de\ un\ label)
+10. [auto_type](#auto_type)
+11. [static](#static)
+12. [extern](#extern)
+13. [volatile](#volatile)
+14. [Calificadores de tipo en arrays](#Calificadores\ de\ tipo\ en\ arrays)
+15. [Restrict](#Restrict)
+16. [Inline](#Inline)
+17. [Search path](#Search\ path)
+18. [Concatenación](#Concatenación)
+19. [GNU Macros ya definidos](#GNU\ Macros\ ya\ definidos)
+20. [Floating point](#Floating\ point)
+21. [Bit flags](#Bit\ flags)
+
+## Expresiones condicionales
+En un condicional del tipo `cond? iftrue: else`, si la condicion y el valor `iftrue` coinciden se puede escribir de la siguiente manera: `iftrue? : else`.
+
+## Potenciación de números hexadecimales
+En un número hexadecimal de la forma `0x...`, añadiéndole `pN` como sufijo multiplica el numero original por `2^N`.
+Al igual que funciona `e` en números decimales.
+```c
+0x100p-8 // 0x1
+0x1p4 // 0x10
+```
+
+## Puntero a entero
+En gnu C se permite hacer typecast a punteros y convertirlos en enteros, usando los tipos `uintptr_t` y `intptr_t`. Se recomienda no usarlo a menos que sea necesario.
+
+## Offset en una estructura
+Para obtener el offset de un campo dentro de una estructura en gnu existe el macro `offsetof(type, field)`.
+
+## Estructuras y uniones sin nombre
+Definamos la siguiente estructura con una unión sin nombre:
+```c
+struct _foo
+{
+    int a;
+    union {
+        float f;
+        int   i;
+        }
+} foo;
+```
+Se puede acceder a los campos de la unión como si perteneciesen a la estructura principal. `foo.f` y `foo.i` son válidos.
+
+## Enums
+Los enums son ints por default. Se puede cambiar el tipo (en el estandard `C23`) de la siguiente forma:
+```c
+enum foo: long{
+...
+};
+```
+Los elementos de un enum definen su valor default sumando `1` al valor entero del campo anterior, siendo `0` el primer valor predeterminado. Se puede modificar el valor al definir el enum:
+```c
+enum foo:{
+ a = 1;
+ b; // 2
+ c = 5;
+}
+```
+
+
+## Switch-case
+En un switch los case pueden referirse a un valor constante `case 1:` o a un rango de valores `case 1 ... 5`, **ambos incluidos**.
+
+## Local labels
+Se pueden declarar labels para usarlos com goto de manera local, de tal manera que solo se puedan usar desde un mismo bloque.
+```c
+{
+__label__ label1;
+...
+}
+```
+
+## Acceder al valor de un label
+Se puede obtener el valor de un label usando el operador unario `&&` y es de tipo puntero.
+```c
+void* labelptr = &&label1;
+```
+Se puede usar en un goto de la siguiente manera:
+```c
+goto *labelptr;
+```
+
+## auto_type
+En un macro se puede copiar el tipo de un parametro utilizando \_\_auto_type.
+```c
+#define max(a, b)({   \
+__auto_type _a = (a); \
+__auto_type _b = (b); \
+_a > _b ? _a : _b     \
+})
+```
+
+## static
+La utilización del keyword `static` antes de la declaración de una variable local hace que se almacene de forma global en ese archivo aunque fuese declarada dentro de una función.
+```c
+int count()
+{
+    static int counter = 0;
+    return counter++;
+}
+```
+En este ejemplo cada llamada a count devuelve un numero distinto. La declaración no se ejecuta en cada llamada a la función, sino una unica vez.
+
+`static` antes de la declaración de una función hace que solo sea accesible desde el mismo archivo, y otras funciones estáticas pueden ser definidas en otros archivos con el mismo nombre.
+
+## extern
+El keyword `extern` declara una variable o funcion que ya fue o será definida en otro sitio. Al declarar usando extern no se reserva espacio por lo que se puede omitir información como la longitud de un array.
+
+## volatile
+El keyword `volatile` hace que se vuelva a obtener el valor de la variable cada vez que se necesita acceder a su valor. Es util si se va a acceder al valor de esa variable de manera asincrona.
+
+## Calificadores de tipo en arrays
+En una llamada a una funcion, la posición de los calificadores importa.
+- `volatile int array[20]`: el array es equivalente a un puntero `volatile int *`.
+- `int array[const 20]`: el array es equivalente a un puntero `const int *`.
+- `const int array[20]`: el array es equivalente a un puntero de tipo `const int`.
+
+## Restrict
+El keyword `restrict` como argumento de una funcion asegura que el valor al que apunta un puntero solo puede ser modificado a traves de ese puntero. Permite al compilador optimizar el codigo reduciendo las lecturas de ese valor.
+
+## Inline
+El keyword inline permite al compilador optimizar llamadas a funciones de una linea.
+```c
+inline int add(int a, int b)
+{
+    return a + b;
+}
+```
+
+
+## Search path
+- *libdir/gcc/target/version/include*
+- */usr/local/include*
+- *libdir/gcc/target/version/include-fixed*
+- *libdir/target/include*
+- */usr/include/target*
+- */usr/include*
+
+## Concatenación
+En macros, se pueden unir dos tokens usando `##`. Utilizando un único `#` se convierte en string.
+```c
+#define COM(c){#c, c ## _func}
+```
+Este macro crea un par que contiene el nombre del parametro como string y el resultado de añadirle \_func al parametro.
+
+Cuando se utiliza `##` entre una `,` y un argumento, añade la coma y el argumento si el argumento existe, sino elimina ambos.
+```c
+#define eprintf(format, ...) \
+    fprintf(std_err, format, ##__VA_ARGS__)
+```
+
+## GNU Macros ya definidos
+- `__FILE__`
+- `__LINE__`
+- `__func__` (c standard)
+- `__FUNCTION__`
+- `__PRETTY_FUNCTION__`: Equivalente a `__FUNCTION__` en C.
+- `__DATE__`: feb 12 1999
+- `__TIME__`: 10:03:20
+- `__TIME_STAMP__`: feb 12 10:03:20 1999
+- `__COUNTER__`: Devuelve un valor unico empezando en 0.
+
+## Floating point
+Valores especiales:
+- `+infinity`: más grande que cualquier valor.
+- `-infinity`: más pequeño que cualquier valor.
+- `QNaN`, `SNaN`: NaN silencioso y NaN de señal (necesita `-fsignaling-nans`). `SNaN` causa una señal de interrupción.
+
+Se puede saber si un valor es NaN de las siguientes maneras:
+```c
+if (a != a)
+    ...
+```
+```c
+if (isnan(a))
+    ...
+```
+
+Algunos macros importantes:
+- `FLT_MIN`
+- `DBL_MIN`
+- `LDBL_MIN`: Defines the minimum normalized positive floating-point values that can be represented with the type.
+- `FLT_HAS_SUBNORM`
+- `DBL_HAS_SUBNORM`
+- `LDBL_HAS_SUBNORM`: Defines if the floating-point type supports subnormal (or “denormalized”) numbers or not.
+- `FLT_TRUE_MIN`
+- `DBL_TRUE_MIN`
+- `LDBL_TRUE_MIN`
+- `FLT_MAX`
+- `DBL_MAX`
+- `LDBL_MAX`: Defines the largest values that can be represented with the type.
+- `FLT_DECIMAL_DIG`
+- `DBL_DECIMAL_DIG`
+- `LDBL_DECIMAL_DIG`: Defines the number of decimal digits n such that any floating-point number that can be represented in the type can be rounded to a floating-point number with n decimal digits, and back again, without losing any precision of the value.
+
+
+## Bit flags
+Uniendo todas las opciones con valor booleano en una unica variable se ahorra espacio y se hace mas facil de utilizar. Cada opción utiliza un bit de la variable.
+
+#### Declaración con enum
+```c
+enum OPTIONS {
+    NONE = 1 << 0,
+    A    = 1 << 1,
+    B    = 1 << 2,
+    C    = 1 << 3,
+};
+```
+
+#### Añadir opciones
+```c
+enum OPTIONS opt;
+opt &= A;
+opt &= A | B;
+```
+Se pueden añadir opciones usando el operador binario `&`. Para añadir varias opciones a la vez se pueden combinar usando el operador `|`.
+
+#### Eliminar opciones
+```c
+opt &= ~(A);
+opt &= ~(A | B);
+```
+Se añade el inverso se la opcion que se quiere eliminar
+
+#### Comprobar una opción
+```c
+if (opt & A)
+    // A is set
+
+if (opt & (A & B))
+    // A and B are set
+```
