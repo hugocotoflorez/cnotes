@@ -631,6 +631,6 @@ Se añade el inverso se la opcion que se quiere eliminar
 if (opt & A)
     // A is set
 
-if (opt & (A & B))
+if (opt & (A | B))
     // A and B are set
 ```
