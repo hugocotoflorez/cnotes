@@ -179,9 +179,12 @@ To declare an option param you can do something like
 
 ### Set options
 
-To set options you have to unary-or option values:
+To set options you have to binary-or option values:
 `foo(1, 2, OPT1 | OPT2 | OPT3);` this way you are
 passing this 3 options to options param.
+
+Also you can add an option to a variable using 
+`opt |= OPT1`.
 
 ### Check for options
 
@@ -611,8 +614,8 @@ enum OPTIONS {
 #### Añadir opciones
 ```c
 enum OPTIONS opt;
-opt &= A;
-opt &= A | B;
+opt |= A;
+opt |= A | B;
 ```
 Se pueden añadir opciones usando el operador binario `&`. Para añadir varias opciones a la vez se pueden combinar usando el operador `|`.
 
